@@ -7,12 +7,7 @@ Ausführung mit Coverage:
     pytest system_test.py -v --cov=. --cov-report=term-missing
 """
 import pytest
-import sys
-import os
 from datetime import date, timedelta
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from model import Task
 from controller import TaskController
 from repository import JSONTaskRepository, InMemoryTaskRepository

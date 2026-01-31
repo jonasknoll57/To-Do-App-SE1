@@ -1,10 +1,7 @@
 #Arrange Act Assert
 #Testet einzelene Funktionen
 import pytest
-import sys
-import os
 from datetime import date, timedelta
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from controller import TaskController
 from repository import InMemoryTaskRepository
 from patterns import (

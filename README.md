@@ -2,6 +2,26 @@
 
 Eine funktionale TODO-Anwendung mit Python, Streamlit und MVC-Architektur.
 
+Anforderung:
+Warum ist die MVC-Architektur für eine TODO-App sinnvoll?
+Wie wurde MVC in diesem Projekt konkret umgesetzt?
+Dateiorga
+Kommentare
+1. Bereitstellung der Designs für Desktop und Mobile (falls abweichend)
+Format: .fig oder SVG
+3. UI: Dokumentation:
+Welche UI-Elemente unterstützen welche UI-Prinzipien?
+Für jedes der 10 UI-Prinzipien je ein konkretes Beispiel (in der
+README)
+MVC-Architektur: Kurze Beschreibung in README
+Warum ist MVC für TODO-App sinnvoll?
+Wie wurde MVC in diesem Projekt umgesetzt?
+
+
+Windows venv
+Macos venv
+requirements
+playwright install
 ---
 
 ## Inhaltsverzeichnis
@@ -407,5 +427,6 @@ Für echte Streamlit-Komponenten in Figma:
 ## Lizenz
 
 Dieses Projekt wurde für die DHBW Stuttgart - Software Engineering Vorlesung erstellt.
-#   T o - D o - A p p - S E 1  
+#   T o - D o - A p p - S E 1 
+ 
  

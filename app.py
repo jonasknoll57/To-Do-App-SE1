@@ -1,3 +1,9 @@
+import sys
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_BASE_DIR, "src"))
+
 import streamlit as st
 from controller import TaskController
 from repository import JSONTaskRepository
@@ -5,7 +11,7 @@ from patterns import TaskMediator
 from view import TodoView
 
 
-# === PAGE CONFIG ===
+# Page-Config
 st.set_page_config(
     page_title="TODO-App",
     page_icon="✅",
@@ -20,7 +26,8 @@ def init_app():
     Session State
     """
     if "mediator" not in st.session_state:
-        repository = JSONTaskRepository("tasks.json")
+        data_path = os.path.join(_BASE_DIR, "data", "tasks.json")
+        repository = JSONTaskRepository(data_path)
         
         controller = TaskController(repository)
         controller.load()
