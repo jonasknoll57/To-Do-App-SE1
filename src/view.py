@@ -7,81 +7,84 @@ from patterns import TaskMediator
 
 
 COLORS = {
-    "primary": "#0C55F3",
+    "primary": "#2563EB",
+    "primary_light": "#3B82F6",
     "success": "#16A34A",
     "warning": "#D97706",
     "danger":  "#DC2626",
-    "text":    "#111827",
-    "muted":   "#6B7280",
-    "bg":      "#F4F3F06F",
+    "text":    "#0F172A",
+    "text_secondary": "#475569",
+    "muted":   "#94A3B8",
+    "bg":      "#F8FAFC",
     "card":    "#FFFFFF",
-    "border":  "#E5E7EB",
+    "border":  "#E2E8F0",
 }
 
 CSS = f"""
 <style>
+/* ===== Base ===== */
 .stApp {{
-  background:{COLORS['bg']};
-  color: #111827;
+  background: {COLORS['bg']};
 }}
 
-html, body, [class*="css"] {{
-  font-size: 16px;
-}}
-
+/* ===== Typography ===== */
 .main-header {{
-  text-align:center;
-  color:{COLORS['text']};
-  font-size: 1.9rem;
-  font-weight: 750;
+  text-align: center;
+  color: {COLORS['text']};
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0.25rem 0 0 0;
 }}
+
 .sub-header {{
-  text-align:center;
-  color:{COLORS['muted']};
-  font-size: 0.95rem;
-  margin: 0.35rem 0 1.0rem 0;
+  text-align: center;
+  color: {COLORS['muted']};
+  font-size: 0.88rem;
+  margin: 0.2rem 0 0.5rem 0;
 }}
 
 .section-header {{
-  text-align:center;
-  color:{COLORS['text']};
+  color: {COLORS['text']};
   font-size: 1.05rem;
-  font-weight: 650;
-  margin: 1.0rem 0 0.75rem 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0.5rem 0 0.5rem 0;
 }}
 
-div[data-testid="stMetric"] {{
-  background: {COLORS['card']};
-  border: 1px solid {COLORS['border']};
-  border-radius: 12px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 0 rgba(17,24,39,0.03);
+/* ===== Cards / Containers ===== */
+div[data-testid="stVerticalBlockBorderWrapper"] {{
+  border-radius: 16px !important;
+  border-color: {COLORS['border']} !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
 }}
 
-div[data-testid="stMetric"] label {{
-  font-size: 0.8rem !important;
-  color: {COLORS['muted']} !important;
-}}
-
-div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
-  font-size: 1.6rem !important;
-  color: {COLORS['text']} !important;
-}}
-
-/* Inputs / Selects / Buttons */
-.stTextInput input, .stSelectbox div[data-baseweb="select"] {{
+/* ===== Inputs ===== */
+.stTextInput input,
+.stSelectbox div[data-baseweb="select"] {{
   border-radius: 10px !important;
 }}
+
+.stTextInput input:focus {{
+  border-color: {COLORS['primary']} !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
+}}
+
+/* ===== Buttons ===== */
 .stButton > button {{
   border-radius: 10px;
   font-weight: 600;
   padding: 0.45rem 0.75rem;
+  transition: all 0.15s ease;
 }}
 
-/* Badge */
+.stButton > button:hover {{
+  transform: translateY(-1px);
+}}
+
+/* ===== Badge ===== */
 .category-badge {{
-  background: rgba(37,99,235,0.10);
+  background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.14));
   color: {COLORS['primary']};
   padding: 2px 10px;
   border-radius: 999px;
@@ -90,50 +93,119 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   display: inline-block;
 }}
 
-/* Dates */
-.date-overdue {{ color: {COLORS['danger']}; font-weight: 650; font-size: 0.85rem; }}
-.date-today   {{ color: {COLORS['warning']}; font-weight: 650; font-size: 0.85rem; }}
-.date-normal  {{ color: {COLORS['muted']}; font-size: 0.85rem; }}
+/* ===== Dates ===== */
+.date-overdue {{
+  color: {COLORS['danger']};
+  font-weight: 650;
+  font-size: 0.82rem;
+  background: rgba(220,38,38,0.06);
+  padding: 1px 8px;
+  border-radius: 6px;
+}}
+.date-today {{
+  color: {COLORS['warning']};
+  font-weight: 650;
+  font-size: 0.82rem;
+  background: rgba(217,119,6,0.06);
+  padding: 1px 8px;
+  border-radius: 6px;
+}}
+.date-normal {{
+  color: {COLORS['text_secondary']};
+  font-size: 0.82rem;
+}}
 
-/* Done task */
+/* ===== Done task ===== */
 .task-done {{
   text-decoration: line-through;
   color: {COLORS['muted']};
 }}
 
-/* Task row spacing: klare Zeilenhöhe */
-.task-row {{
-  padding: 0.35rem 0;
+/* ===== Stats Row (compact, inline) ===== */
+.stats-row {{
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin: 0.3rem 0;
 }}
 
-/* Progress */
+.stats-item {{
+  font-size: 0.82rem;
+  color: {COLORS['text_secondary']};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}}
+
+.stats-item b {{
+  font-size: 1rem;
+  color: {COLORS['text']};
+}}
+
+/* ===== Progress ===== */
 .progress-bar {{
   background: {COLORS['border']};
   border-radius: 999px;
-  height: 10px;
+  height: 8px;
   overflow: hidden;
 }}
+
 .progress-fill {{
-  background: {COLORS['primary']};
+  background: linear-gradient(90deg, {COLORS['primary']}, #60A5FA);
   height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
 }}
 
-
-/* Smart info dezenter */
+/* ===== Smart Sort Info ===== */
 .smart-info {{
-  color: {COLORS['muted']};
-  font-size: 0.8rem;
+  color: {COLORS['primary']};
+  font-size: 0.78rem;
   text-align: center;
-  margin: 0.25rem 0 0.75rem 0;
+  background: rgba(37,99,235,0.05);
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37,99,235,0.1);
+  margin: 0.25rem 0 0.5rem 0;
 }}
 
-/* Mobile */
+/* ===== Empty State ===== */
+.empty-list {{
+  text-align: center;
+  color: {COLORS['muted']};
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}}
+
+/* ===== Task separator ===== */
+.task-sep {{
+  border: none;
+  border-top: 1px solid #F1F5F9;
+  margin: 0.3rem 0;
+}}
+
+/* ===== Responsive: Tablet ===== */
+@media (max-width: 768px) {{
+  .main-header {{ font-size: 1.5rem; }}
+  .sub-header {{ font-size: 0.82rem; }}
+  .stats-item {{ font-size: 0.78rem; }}
+  .stats-item b {{ font-size: 0.92rem; }}
+}}
+
+/* ===== Responsive: Phone ===== */
 @media (max-width: 640px) {{
-  .main-header {{ font-size: 1.6rem; }}
-  .sub-header {{ font-size: 0.9rem; }}
-  .category-badge {{ font-size: 0.65rem; }}
-}}
+  .main-header {{ font-size: 1.3rem; }}
+  .sub-header {{ display: none; }}
+  .section-header {{ font-size: 0.92rem; }}
+  .category-badge {{ font-size: 0.65rem; padding: 2px 8px; }}
+  .stats-item {{ font-size: 0.72rem; }}
+  .stats-item b {{ font-size: 0.85rem; }}
+  div[data-testid="stVerticalBlockBorderWrapper"] {{
+    border-radius: 12px !important;
+  }}
 
+}}
 </style>
 """
 
@@ -160,13 +232,13 @@ class TodoView:
         c1, c2, c3 = st.columns([1, 6, 1])
         with c2:
             st.markdown('<h1 class="main-header">✅ TODO-App</h1>', unsafe_allow_html=True)
-            st.markdown('<p class="sub-header">Organisiere deine Aufgaben einfach und effizient</p>', unsafe_allow_html=True)
+            st.markdown('<p class="sub-header">Öffne die Sidebar, um eine Aufgabe zu erstellen.</p>', unsafe_allow_html=True)
         with c3:
             with st.popover("❓"):
                 st.markdown('''
                 <div class="help-content">
                 <h4>🚀 So funktioniert's</h4>
-                <b>Task erstellen:</b> Titel eingeben, optional Kategorie & Datum wählen, "Erstellen" klicken.<br><br>
+                <b>Task erstellen:</b> Sidebar links öffnen: Titel eingeben, optional Kategorie & Datum wählen, "Erstellen" klicken.<br><br>
                 <b>Task erledigen:</b> Checkbox anklicken.<br><br>
                 <b>Task bearbeiten:</b> ✏️ klicken, ändern, speichern.<br><br>
                 <b>Task löschen:</b> 🗑️ klicken und bestätigen.<br><br>
@@ -260,29 +332,51 @@ class TodoView:
 
     
     def render_task_section(self):
-        """Filter + Task-Liste kombiniert."""
+        """Filter + Task-Liste mit integrierter Statistik."""
         with st.container(border=True):
             self._header("📋 Meine Aufgaben")
-            
+
+            # Kompakte Inline-Statistik
+            stats = self.mediator.controller.get_statistics()
+            if stats["total"] > 0:
+                pct = int(stats['progress'] * 100)
+                st.markdown(f'''
+                <div class="stats-row">
+                    <span class="stats-item">📝 <b>{stats["total"]}</b> Gesamt</span>
+                    <span class="stats-item">⏳ <b>{stats["open"]}</b> Offen</span>
+                    <span class="stats-item">✅ <b>{stats["done"]}</b> Erledigt</span>
+                </div>
+                <div style="max-width:260px; margin:0.4rem auto 0.6rem auto;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:{pct}%;"></div>
+                    </div>
+                    <p style="text-align:center; font-size:0.75rem; color:{COLORS['muted']}; margin:0.2rem 0 0 0;">{pct}% erledigt</p>
+                </div>
+                ''', unsafe_allow_html=True)
+
             c1, c2, c3 = st.columns([2, 2, 1])
             with c1:
-                status = st.radio("Status", ["Alle", "Offen", "Erledigt"], horizontal=True, label_visibility="collapsed")
+                status = st.segmented_control("Status", ["Alle", "Offen", "Erledigt"], default="Alle", label_visibility="collapsed", key="status_filter")
+                if status is None:
+                    status = "Alle"
             with c2:
                 cats = ["Alle"] + self.mediator.get_categories()
                 cat = st.selectbox("Filter", cats, label_visibility="collapsed")
             with c3:
                 st.session_state.smart_sort = st.toggle("🎯", value=st.session_state.smart_sort, help="Smart-Sort: Dringende zuerst")
-            
+
             st.divider()
 
             if st.session_state.smart_sort:
                 st.markdown('<p class="smart-info">🎯 Sortiert: Überfällig → Heute → Datum</p>', unsafe_allow_html=True)
-            
+
             tasks = self._get_tasks(status, cat)
             if not tasks:
                 st.markdown('<div class="empty-list">🎉 Keine Aufgaben – erstelle eine neue!</div>', unsafe_allow_html=True)
             else:
-                for task in tasks:
+                for i, task in enumerate(tasks):
+                    if i > 0:
+                        st.markdown('<hr class="task-sep">', unsafe_allow_html=True)
                     if st.session_state.edit_id == task.id:
                         self._render_edit_form(task)
                     else:
@@ -449,14 +543,8 @@ class TodoView:
     def render(self):
         st.markdown(CSS, unsafe_allow_html=True)
 
-        self.render_header()
-
-        left_col, right_col = st.columns([1.2, 2], gap="large")
-
-        with left_col:
+        with st.sidebar:
             self.render_add_task_form()
-            st.space()
-            self.render_statistics()
-            
-        with right_col:
-            self.render_task_section()
+
+        self.render_header()
+        self.render_task_section()
