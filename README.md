@@ -1,27 +1,7 @@
-# 📝 Task Manager - MVC TODO-App mit Streamlit & Design Patterns
+# TODO-App mit MVC-Architektur
 
-Eine funktionale TODO-Anwendung mit Python, Streamlit und MVC-Architektur.
+Eine funktionale TODO-Anwendung mit Python, Streamlit und MVC-Architektur, inklusive Design Patterns, umfangreicher Teststrategie und responsivem UI-Design.
 
-Anforderung:
-Warum ist die MVC-Architektur für eine TODO-App sinnvoll?
-Wie wurde MVC in diesem Projekt konkret umgesetzt?
-Dateiorga
-Kommentare
-1. Bereitstellung der Designs für Desktop und Mobile (falls abweichend)
-Format: .fig oder SVG
-3. UI: Dokumentation:
-Welche UI-Elemente unterstützen welche UI-Prinzipien?
-Für jedes der 10 UI-Prinzipien je ein konkretes Beispiel (in der
-README)
-MVC-Architektur: Kurze Beschreibung in README
-Warum ist MVC für TODO-App sinnvoll?
-Wie wurde MVC in diesem Projekt umgesetzt?
-
-
-Windows venv
-Macos venv
-requirements
-playwright install
 ---
 
 ## Inhaltsverzeichnis
@@ -29,277 +9,93 @@ playwright install
 1. [MVC-Architektur](#mvc-architektur)
 2. [Funktionale Anforderungen](#funktionale-anforderungen)
 3. [Nicht-Funktionale Anforderungen](#nicht-funktionale-anforderungen)
-4. [10 UI-Prinzipien (Nielsen-Heuristiken)](#10-ui-prinzipien-nielsen-heuristiken)
-5. [Design Patterns](#design-patterns)
-6. [Projektstruktur](#projektstruktur)
-7. [Installation & Start](#installation--start)
-8. [Tests](#tests)
-9. [Figma Design](#figma-design)
+4. [UI-Dokumentation (Nielsen-Heuristiken)](#ui-dokumentation-nielsen-heuristiken)
+5. [Installation & Start](#installation--start)
+6. [Tests](#tests)
+7. [Projektstruktur](#projektstruktur)
+8. [Figma-Designs](#figma-designs)
 
 ---
 
 ## MVC-Architektur
 
-### Warum MVC für eine TODO-App?
+### Warum ist MVC für eine TODO-App sinnvoll?
 
 MVC (Model-View-Controller) trennt die Anwendung in drei Schichten mit klaren Verantwortlichkeiten. Diese Architektur ist für eine TODO-App besonders sinnvoll, weil:
 
-1. **Testbarkeit**: Model, Repository und Controller können unabhängig von der Streamlit-UI getestet werden. Unit-Tests prüfen die Geschäftslogik isoliert.
+- **Testbarkeit:** Model, Repository und Controller lassen sich unabhängig von der Streamlit-UI (View) testen. Unit-Tests prüfen die Geschäftslogik isoliert, ohne dass ein Browser oder eine laufende Anwendung nötig ist.
+- **Wartbarkeit:** Änderungen am UI (View) erfordern keine Änderungen an der Logik (Controller) oder den Daten (Model). Neue Features können gezielt in der richtigen Schicht ergänzt werden, ohne bestehenden Code zu brechen.
+- **Wiederverwendbarkeit:** Der Controller kann mit verschiedenen Views verwendet werden (z.B. CLI, REST-API, anderes UI-Framework), da er keine Abhängigkeit zur Darstellungsschicht hat.
+- **Übersichtlichkeit:** Klare Trennung der Verantwortlichkeiten macht den Code verständlicher. Jede Datei hat einen definierten Zweck und eine begrenzte Zuständigkeit.
+- **Skalierbarkeit:** Neue Funktionen (z.B. Benutzer, Projekte, Tags) können in separaten Modulen ergänzt werden, ohne bestehenden Code zu verändern.
 
-2. **Wartbarkeit**: Änderungen am UI (View) erfordern keine Änderungen an der Logik (Controller) oder den Daten (Model). Neue Features können gezielt in der richtigen Schicht ergänzt werden.
+### Wie wurde MVC in diesem Projekt konkret umgesetzt?
 
-3. **Wiederverwendbarkeit**: Der Controller kann mit verschiedenen Views verwendet werden (z.B. CLI, REST-API, andere UI-Frameworks).
+| Schicht | Datei | Klasse(n) | Verantwortlichkeit |
+|---------|-------|-----------|--------------------|
+| **Model** | `src/model.py` | `Task` | Datenstruktur (dataclass) mit Feldern: title, done, category, due_date, id, created_at. Methoden für Serialisierung (`to_dict`, `from_dict`), Status (`toggle`, `is_overdue`, `is_due_today`). |
+| **Repository** | `src/repository.py` | `TaskRepositoryInterface`, `JSONTaskRepository`, `InMemoryTaskRepository` | Abstrakte Persistenz-Schicht. JSON-Implementierung für Produktion, In-Memory für Tests. |
+| **Controller** | `src/controller.py` | `TaskController` | Geschäftslogik und CRUD-Operationen: add, delete, update, toggle, get_all, get_open, get_done, get_by_category, get_overdue, get_due_today, get_statistics. |
+| **View** | `src/view.py` | `TodoView` | Streamlit-UI mit Methoden: render_header, render_add_task_form, render_task_section, render_statistics, render. |
+| **App** | `app.py` | `main()`, `init_app()` | Einstiegspunkt. Initialisiert Repository, Controller und Mediator, erstellt die View und startet die Anwendung. |
 
-4. **Übersichtlichkeit**: Klare Trennung der Verantwortlichkeiten macht den Code verständlicher. Jede Datei hat einen definierten Zweck.
-
-5. **Skalierbarkeit**: Neue Funktionen (z.B. Benutzer, Projekte) können in separaten Modulen ergänzt werden, ohne bestehenden Code zu verändern.
-
-### MVC-Umsetzung in diesem Projekt
-
-| Schicht | Datei | Klassen/Funktionen | Verantwortlichkeit |
-|---------|-------|-------------------|-------------------|
-| **Model** | `model.py` | `Task` | Datenstruktur, Serialisierung, Validierung |
-| **Repository** | `repository.py` | `JSONTaskRepository`, `InMemoryTaskRepository` | Persistenz-Schicht, Datenzugriff |
-| **Controller** | `controller.py` | `TaskController` | Geschäftslogik, CRUD-Operationen |
-| **Patterns** | `patterns.py` | `TaskFactory`, `TaskAdapter`, `TaskMediator` | Design Patterns für Erweiterbarkeit |
-| **View** | `view.py` | `TodoView` | UI-Komponenten, Layout, Darstellung |
-| **App** | `app.py` | `main()`, `init_app()` | Einstiegspunkt, Initialisierung |
-
-### Datenfluss
-
-```
-User → View (Streamlit) → Mediator → Controller → Repository → JSON-Datei
-                                         ↓
-                                       Model (Task)
-```
 
 ---
 
 ## Funktionale Anforderungen
 
-### Basisliste (MUSS)
-
-| ID | Beschreibung | Status | Umsetzung |
-|----|--------------|--------|-----------|
-| FR-01 | Aufgaben persistent speichern | ✅ | `JSONTaskRepository` speichert in `tasks.json` |
-| FR-02 | Aufgabe hinzufügen | ✅ | `st.text_input` + "Erstellen" Button |
-| FR-03 | Aufgabe löschen | ✅ | 🗑️ Button pro Task |
-| FR-04 | Aufgabe bearbeiten | ✅ | ✏️ Button → Edit-Modus mit Speichern/Abbrechen |
-| FR-05 | Als erledigt markieren | ✅ | Checkbox pro Task mit `toggle()` |
-| FR-06 | Aufgaben in Liste anzeigen | ✅ | Dynamische Liste mit `st.columns` Layout |
-
-### Zusätzliche Anforderungen (>5 über Basisliste)
-
-| ID | Beschreibung | Priorität | Umsetzung |
-|----|--------------|-----------|-----------|
-| FR-07 | Nach Status filtern (offen/erledigt) | SOLL | `st.radio` horizontal |
-| FR-08 | Kategorien zuordnen + verwalten | SOLL | Dropdown + Expander zum Erstellen/Löschen |
-| FR-09 | Fälligkeitsdatum mit Datepicker | KANN | `st.date_input` mit min_value=heute |
-| FR-10 | Überfällig-Warnung | ZUSATZ | Rote ⚠️ Markierung bei überfälligen Tasks |
-| FR-11 | Fortschrittsanzeige | ZUSATZ | `st.progress()` mit Prozentwert |
-| FR-12 | Statistiken (Gesamt/Offen/Erledigt) | ZUSATZ | `st.metric()` Dashboard |
-| FR-13 | Filter nach Kategorie | ZUSATZ | Dropdown-Filter kombiniert mit Status |
-| FR-14 | Smart-Sortierung | ZUSATZ | Automatische Priorisierung nach Dringlichkeit (🎯 Toggle) |
+| ID | Beschreibung |
+|----|--------------|
+| FR-01 | Aufgaben werden persistent in einer JSON-Datei gespeichert und bleiben nach Neustart erhalten |
+| FR-02 | Neue Aufgaben können über ein Formular mit Titel,  (optionaler) Kategorie und (optionalem) Fälligkeitsdatum hinzugefügt werden |
+| FR-03 | Aufgaben können einzeln gelöscht werden |
+| FR-04 | Bestehende Aufgaben können bearbeitet werden (Titel, Kategorie, Datum) |
+| FR-05 | Aufgaben können per Checkbox als erledigt oder offen markiert werden |
+| FR-06 | Alle Aufgaben werden in einer dynamischen Liste angezeigt |
+| FR-07 | Aufgaben können nach Status gefiltert werden (Alle, Offen, Erledigt) |
+| FR-08 | Aufgaben können Kategorien zugeordnet werden; Kategorien sind vom Benutzer erstellbar und löschbar |
+| FR-09 | Ein Fälligkeitsdatum kann per Datepicker gesetzt werden (nur zukünftige Daten) |
+| FR-10 | Überfällige Aufgaben werden visuell mit einer Warnung hervorgehoben |
+| FR-11 | Ein Fortschrittsbalken zeigt den Erledigungsgrad aller Aufgaben an |
+| FR-12 | Ein Statistik-Dashboard zeigt Gesamt-, Offen- und Erledigt-Anzahl als Metriken an |
+| FR-13 | Aufgaben können nach Kategorie gefiltert werden |
+| FR-14 | Eine Smart-Sortierung priorisiert Aufgaben automatisch nach Dringlichkeit (Überfällig -> Heute -> Zukunft -> Ohne Datum -> Erledigt) |
 
 ---
 
 ## Nicht-Funktionale Anforderungen
 
-| ID | Typ | Beschreibung | Priorität | Umsetzung |
-|----|-----|--------------|-----------|-----------|
-| NFR-01 | Usability | Aufgabe mit max. 3 Klicks anlegen | MUSS | Titel → Erstellen (2 Klicks) |
-| NFR-02 | Performance | App startet in < 2 Sekunden | MUSS | Leichtgewichtiges Streamlit |
-| NFR-03 | Reliability | Gleiche Eingabe → gleiches Ergebnis | MUSS | Deterministische Logik |
-| NFR-04 | Portability | Läuft auf Windows, Mac, Linux | MUSS | Python + Streamlit cross-platform |
-| NFR-05 | Maintainability | MVC-Architektur mit klarer Trennung | MUSS | Separate Dateien pro Schicht |
-| NFR-06 | Testability | >80% Code-Coverage möglich | SOLL | Unit, Integration, System, E2E Tests |
-| NFR-07 | Usability | Responsive Design (Desktop + Mobile) | SOLL | `st.columns` mit flexiblem Layout |
-| NFR-08 | Accessibility | Tooltips für alle Buttons | SOLL | `help=""` Parameter bei Buttons |
-| NFR-09 | Reliability | Fehlerhafte Eingaben werden abgefangen | SOLL | ValueError bei leerem Titel |
-| NFR-10 | Usability | Smart-Sort für Dringlichkeits-Priorisierung | KANN | Toggle sortiert nach: Überfällig → Heute → Datum |
+| ID  | Beschreibung |
+|----|--------------|
+| NFR-01 | Eine Aufgabe kann mit maximal 3 Klicks angelegt werden |
+| NFR-02 | Die App startet in unter 2 Sekunden |
+| NFR-03 | Gleiche Eingaben führen immer zum gleichen Ergebnis (deterministische Logik) |
+| NFR-04 | Die App läuft auf Windows, macOS und Linux |
+| NFR-05 | MVC-Architektur mit klarer Trennung der Verantwortlichkeiten |
+| NFR-06 | Code-Coverage von über 80% ist erreichbar |
+| NFR-07 | Responsive Design für Desktop und Mobile |
+| NFR-08 | Alle interaktiven Elemente haben Tooltips |
+| NFR-09 | Fehlerhafte Eingaben (z.B. leere Titel) werden abgefangen und dem Benutzer gemeldet |
+| NFR-10 | Smart-Sort ordnet Aufgaben automatisch nach Dringlichkeit |
 
 ---
 
-## 10 UI-Prinzipien (Nielsen-Heuristiken)
+## UI-Dokumentation (Nielsen-Heuristiken)
 
-| # | Prinzip | UI-Element | Konkretes Beispiel in der App |
-|---|---------|------------|-------------------------------|
-| 1 | **Sichtbarkeit des Systemstatus** | Fortschrittsbalken, Statistiken | `st.progress()` zeigt Erledigungsgrad (25%), `st.metric()` zeigt Gesamt/Offen/Erledigt |
-| 2 | **Übereinstimmung System & Wirklichkeit** | Icons, natürliche Sprache | ✅ für erledigt, 🗑️ für Löschen, 📅 für Datum – intuitive Metaphern |
-| 3 | **Benutzerkontrolle & Freiheit** | Abbrechen-Button, Undo | "❌ Abbrechen" im Edit-Modus, Kategorien können erstellt UND gelöscht werden |
-| 4 | **Konsistenz & Standards** | Einheitliches Layout | Alle Tasks haben identisches Layout (Checkbox, Titel, Buttons in gleicher Reihenfolge) |
-| 5 | **Fehlervermeidung** | Validierung, Constraints | Leere Titel werden mit `st.error()` abgelehnt, Datepicker verhindert vergangene Daten |
-| 6 | **Wiedererkennung statt Erinnerung** | Sichtbare Optionen | Kategorien als Dropdown sichtbar, Filter als Radio-Buttons permanent angezeigt |
-| 7 | **Flexibilität & Effizienz** | Schnellaktionen, Anpassung | Ein-Klick Checkbox, Smart-Sort 🎯 für automatische Priorisierung, Kategorien selbst definierbar |
-| 8 | **Ästhetik & minimalistisches Design** | Klares Layout | Nur notwendige Elemente, `st.divider()` für visuelle Struktur, keine überflüssigen Farben |
-| 9 | **Fehlererkennung & -behebung** | Klare Fehlermeldungen | `st.error("⚠️ Bitte Titel eingeben")` erklärt das Problem und die Lösung |
-| 10 | **Hilfe & Dokumentation** | Tooltips, Hinweise | `st.caption()` mit Tipps, `help="Bearbeiten"` bei Buttons, Footer mit Bedienungshinweis |
+für jedes der 10 UI-Prinzipien nach Nielsen wurde mindestens ein konkretes Beispiel in der App umgesetzt:
 
----
-
-## Design Patterns
-
-### Übersicht: Implementierte Patterns
-
-| Pattern | Datei | Hauptklasse(n) | Funktioniert? |
-|---------|-------|----------------|---------------|
-| Factory | `patterns.py` | `TaskFactory` | ✅ Ja |
-| Abstract Factory | `patterns.py` | `AbstractTaskFactory`, `SimpleTaskFactory`, `PriorityTaskFactory`, `DetailedTaskFactory` | ✅ Ja |
-| Adapter | `patterns.py` | `TaskAdapter`, `ExternalTaskFormat` | ✅ Ja |
-| Mediator | `patterns.py` | `TaskMediator` | ✅ Ja (aktiv genutzt) |
-| Repository | `repository.py` | `TaskRepositoryInterface`, `JSONTaskRepository`, `InMemoryTaskRepository` | ✅ Ja (aktiv genutzt) |
-
-### 1. Factory Pattern (`patterns.py`)
-
-**Zweck**: Flexible Task-Erstellung ohne direkte Klassenkenntnis. Verschiedene Task-Typen werden mit Präfixen erstellt.
-
-**Klassen**: `TaskFactory`
-
-**Verwendung**:
-```python
-task = TaskFactory.create("work", "Meeting vorbereiten")
-# Ergebnis: Task mit Titel "🔨 Meeting vorbereiten"
-
-task = TaskFactory.create("shopping", "Milch kaufen")
-# Ergebnis: Task mit Titel "🛒 Milch kaufen"
-```
-
-### 2. Abstract Factory Pattern (`patterns.py`)
-
-**Zweck**: Familien von Task-Varianten erstellen (einfach vs. detailliert).
-
-**Klassen**: `AbstractTaskFactory` (abstrakt), `SimpleTaskFactory`, `PriorityTaskFactory`, `DetailedTaskFactory`
-
-**Verwendung**:
-```python
-factory = PriorityTaskFactory()
-task = factory.create_task("Wichtige Aufgabe")
-# Ergebnis: Task mit Titel "⚡ Wichtige Aufgabe"
-
-factory = DetailedTaskFactory(default_category="Arbeit")
-task = factory.create_task("Report schreiben")
-# Ergebnis: Task mit Titel "📋 Report schreiben", Kategorie "Arbeit", Datum heute
-```
-
-### 3. Adapter Pattern (`patterns.py`)
-
-**Zweck**: Externe Datenformate in internes Task-Format konvertieren. Ermöglicht Integration von APIs ohne Codeänderung.
-
-**Klassen**: `ExternalTaskFormat`, `TaskAdapter`
-
-**Verwendung**:
-```python
-# Externes Format (z.B. von API)
-external = ExternalTaskFormat(name="API Task", completed=1, tag="Work")
-
-# Konvertierung zu internem Format
-internal = TaskAdapter.adapt(external)
-# 'name' → 'title', 'completed' (0/1) → 'done' (bool), 'tag' → 'category'
-```
-
-### 4. Mediator Pattern (`patterns.py`)
-
-**Zweck**: Zentrale Kommunikation zwischen View und Controller. Reduziert direkte Abhängigkeiten.
-
-**Klassen**: `TaskMediator`
-
-**Verwendung**:
-```python
-mediator = TaskMediator(controller)
-
-# Alle Operationen laufen über den Mediator
-mediator.add_task("Neue Aufgabe", category="Arbeit")
-mediator.toggle_task(task_id)
-mediator.delete_task(task_id)
-
-# Listener für UI-Updates
-mediator.add_listener(lambda event: print(f"Event: {event}"))
-```
-
-### 5. Repository Pattern (`repository.py`)
-
-**Zweck**: Abstraktion der Persistenz-Schicht. Ermöglicht einfaches Austauschen der Speichermethode.
-
-**Klassen**: `TaskRepositoryInterface` (abstrakt), `JSONTaskRepository`, `InMemoryTaskRepository`
-
-**Verwendung**:
-```python
-# Produktion: JSON-Datei
-repo = JSONTaskRepository("tasks.json")
-
-# Tests: In-Memory (kein Dateisystem)
-repo = InMemoryTaskRepository()
-
-# Controller nutzt Repository über Interface
-controller = TaskController(repository=repo)
-```
-
----
-
-## Smart-Sort Feature (1.0 Feature)
-
-### Was ist Smart-Sort?
-
-Smart-Sort ist eine intelligente Sortierung, die Tasks automatisch nach ihrer **Dringlichkeit** priorisiert. Das Feature ist über einen 🎯 Toggle aktivierbar und hilft dem Nutzer, den Überblick zu behalten.
-
-### Sortier-Reihenfolge
-
-1. **⚠️ Überfällige Tasks** – Rot markiert, immer ganz oben
-2. **📅 Heute fällige Tasks** – Orange markiert
-3. **📅 Zukünftige Tasks** – Nach Datum sortiert
-4. **Tasks ohne Datum** – Am Ende der Liste
-5. **✅ Erledigte Tasks** – Ganz unten
-
-### Usability-Vorteile
-
-| Nielsen-Heuristik | Umsetzung |
-|-------------------|-----------|
-| #1 Sichtbarkeit des Systemstatus | Info-Box zeigt aktiven Sortier-Modus |
-| #6 Wiedererkennung statt Erinnerung | Dringende Tasks sind automatisch sichtbar |
-| #7 Flexibilität & Effizienz | Toggle erlaubt An/Aus nach Nutzerpräferenz |
-| #8 Minimalistisches Design | Subtil integriert, nicht aufdringlich |
-
-### Code-Implementierung (`view.py`)
-
-```python
-def _smart_sort_tasks(self, tasks: List[Task]) -> List[Task]:
-    def sort_key(task: Task):
-        if task.done:
-            return (4, date.max)  # Erledigte ganz unten
-        if task.is_overdue():
-            return (0, task.due_date)  # Überfällige zuerst
-        if task.is_due_today():
-            return (1, task.due_date)  # Heute fällige als zweites
-        if task.due_date:
-            return (2, task.due_date)  # Mit Datum nach Fälligkeit
-        return (3, date.max)  # Ohne Datum am Ende
-    
-    return sorted(tasks, key=sort_key)
-```
-
----
-
-## Projektstruktur
-
-```
-todo_app/
-├── app.py                    # Einstiegspunkt (initialisiert MVC)
-├── model.py                  # Model: Task-Datenklasse
-├── repository.py             # Repository: Persistenz-Schicht
-├── controller.py             # Controller: Geschäftslogik
-├── patterns.py               # Design Patterns (Factory, Adapter, Mediator)
-├── view.py                   # View: Streamlit UI-Komponenten
-├── tasks.json                # Persistente Datenspeicherung
-├── README.md                 # Dokumentation
-├── design/
-│   ├── todo_desktop.svg      # Desktop-Design (1200×800)
-│   └── todo_mobile.svg       # Mobile-Design (360×800)
-└── tests/
-    ├── test_unit.py          # Unit Tests (AAA-Muster)
-    ├── test_integration.py   # Integrationstests
-    ├── system_test.py        # Systemtests
-    └── test_e2e.py           # End-to-End Tests (Playwright)
-```
+| Nr. | Prinzip | UI-Element | Konkretes Beispiel |
+|---|---------|------------|--------------------|
+| 1 | **Sichtbarkeit des Systemstatus** | Fortschrittsbalken, Statistiken | `st.progress()` zeigt den Erledigungsgrad in Prozent an. `st.metric()` zeigt Gesamt-, Offen- und Erledigt-Anzahl als Zahlenwerte im Dashboard. Der Benutzer sieht jederzeit, wie weit er ist. |
+| 2 | **Übereinstimmung zwischen System und realer Welt** | Icons, natürliche Sprache | Vertraute Symbole werden verwendet: Checkbox für erledigt, ein Papierkorb-Icon für Löschen, ein Kalender-Icon für Datum, ein Warn-Icon für überfällige Aufgaben. Die Begriffe entsprechen der Alltagssprache (z.B. "Erstellen", "Erledigt", "Offen"). |
+| 3 | **Benutzerkontrolle und Freiheit** | Abbrechen-Button, Rückgängig | Im Bearbeitungsmodus gibt es einen "Abbrechen"-Button, um Änderungen zu verwerfen. Kategorien können sowohl erstellt als auch wieder gelöscht werden. Erledigte Aufgaben können wieder als offen markiert werden. |
+| 4 | **Konsistenz und Standards** | Einheitliches Layout | Alle Aufgaben folgen demselben Layout: Checkbox links, Titel in der Mitte, Aktions-Buttons rechts. Farben, Abstande und Schriftgroessen sind durchgehend konsistent. |
+| 5 | **Fehlervermeidung** | Validierung, Constraints | Leere Titel werden abgelehnt und eine Fehlermeldung angezeigt. Der Datepicker erlaubt nur Daten ab heute und verhindert so die Eingabe vergangener Fälligkeitsdaten. |
+| 6 | **Wiedererkennung statt Erinnerung** | Sichtbare Optionen | Kategorien werden als Dropdown dauerhaft angezeigt, Filter sind als Segmented Control permanent sichtbar. Der Benutzer muss sich nichts merken, alle Optionen sind direkt erkennbar. |
+| 7 | **Flexibilität und Effizienz** | Schnellaktionen, Anpassung | Ein-Klick-Checkbox für schnelles Abhaken. Smart-Sort-Toggle für automatische Priorisierung. Kategorien können individuell erstellt und verwaltet werden. |
+| 8 | **Ästhetik und minimalistisches Design** | Klares Layout | Nur notwendige Elemente werden angezeigt. Visuelle Trennlinien (`st.divider()`) schaffen Struktur. Dezente Farben und ausreichend Whitespace sorgen für Übersichtlichkeit. |
+| 9 | **Fehlererkennung und -behebung** | Klare Fehlermeldungen | Bei leerem Titel erscheint eine verständliche Fehlermeldung, die das Problem benennt und die Loesung vorgibt. Fehlermeldungen sind kontextnah platziert. |
+| 10 | **Hilfe und Dokumentation** | Tooltips, Hinweise | Ein Hilfe-Fenster erklärt die Bedienung der App. Alle Buttons haben `help`-Tooltips. Hinweistexte (`st.caption`) geben Orientierung im Formular. |
 
 ---
 
@@ -307,126 +103,97 @@ todo_app/
 
 ### Voraussetzungen
 
-- Python 3.8+
+- Python 3.8 oder höher
 - pip
 
-### Installation
+### 1. Virtual Environment erstellen
 
-```bash
-# Repository klonen oder Dateien kopieren
-cd todo_app
-
-# Abhängigkeiten installieren
-pip install streamlit pytest
-
-# Für E2E-Tests (optional)
-pip install pytest-playwright
-playwright install chromium
+**Windows:**
+```
+python -m venv venv
+venv\Scripts\activate
 ```
 
-### App starten
+**macOS & Linux:**
+```
+python3 -m venv venv
+source venv/bin/activate
+```
 
-```bash
+### 2. Abhängigkeiten installieren
+
+```
+pip install -r requirements.txt
+
+playwright install
+```
+
+### 3. App starten
+
+```
 streamlit run app.py
 ```
-
-Die App öffnet sich automatisch im Browser unter `http://localhost:8501`
-
 ---
 
 ## Tests
 
-### Testübersicht
+Es wurden bewusst mehr Tests (z.B. Unit-Tests) implementiert als notwendig, um die geforderte Coverage zu erreichen.
 
-| Datei | Typ | Anzahl | Fokus |
-|-------|-----|--------|-------|
-| `test_unit.py` | Unit | ~30 | Einzelne Klassen isoliert |
-| `test_integration.py` | Integration | ~10 | Zusammenspiel von Komponenten |
-| `system_test.py` | System | ~10 | Gesamtsystem kontrolliert |
-| `test_e2e.py` | E2E | ~8 | Echte Benutzerflows mit Browser |
+### Testuebersicht
+
+| Datei | Typ | Beschreibung |
+|-------|-----|--------------|
+| `tests/test_unit.py` | Unit-Tests | Isolierte Tests einzelner Klassen und Methoden (Model, Controller, Patterns) |
+| `tests/test_integration.py` | Integrationstests | Tests des Zusammenspiels von Controller und Repository |
+| `tests/system_test.py` | Systemtests | Tests des Gesamtsystems mit persistenter Speicherung |
+| `tests/test_e2e.py` | End-to-End-Tests | Browser-basierte Tests mit Playwright |
 
 ### Tests ausführen
 
-```bash
-cd tests
-
+```
 # Alle Tests (ohne E2E)
-pytest test_unit.py test_integration.py system_test.py -v
+pytest tests/test_unit.py tests/test_integration.py tests/system_test.py -v
 
-# Nur Unit-Tests
-pytest test_unit.py -v
-
-# Mit Coverage
-pip install pytest-cov
-pytest --cov=.. --cov-report=html -v
-
-# E2E-Tests (erfordert laufende App)
-# Terminal 1: streamlit run ../app.py
-# Terminal 2: pytest test_e2e.py -v --headed
-```
-
-### Teststruktur (AAA-Muster)
-
-Alle Tests folgen dem Arrange-Act-Assert Muster:
-
-```python
-def test_add_task_returns_task(self, controller):
-    # Arrange - Vorbereitung
-    # (controller wird über Fixture bereitgestellt)
-    
-    # Act - Ausführung
-    task = controller.add("Neue Aufgabe")
-    
-    # Assert - Prüfung
-    assert task.title == "Neue Aufgabe"
-    assert len(controller.tasks) == 1
+# E2E-Tests (App muss in separatem Terminal laufen)
+# Terminal 1: streamlit run app.py
+# Terminal 2: pytest tests/test_e2e.py -v
 ```
 
 ---
 
-## Figma Design
+## Projektstruktur
 
-Die SVG-Designs im `design/` Ordner dienen als Vorlage für Figma:
-
-| Datei | Ansicht | Größe | Beschreibung |
-|-------|---------|-------|--------------|
-| `todo_desktop.svg` | Desktop | 1200×800px | Vollständiges Layout mit allen Komponenten |
-| `todo_mobile.svg` | Mobile | 360×800px | Responsive Anpassung, gestapelte Elemente |
-
-### Import in Figma
-
-1. Figma öffnen → New design file
-2. **Datei → Import** oder `Ctrl+Shift+K`
-3. SVG-Dateien auswählen
-4. Als Referenz platzieren
-
-### Streamlit Design System nutzen
-
-Für echte Streamlit-Komponenten in Figma:
-
-1. [Streamlit Design System](https://www.figma.com/community/file/1166786573904778097) öffnen
-2. "Duplicate" klicken
-3. Assets mit "st." Präfix verwenden (z.B. `st.button`, `st.text_input`)
-4. SVG-Design als Vorlage für Positionierung nutzen
-
-### Komponenten-Mapping
-
-| SVG-Element | Streamlit-Komponente | Figma-Asset |
-|-------------|---------------------|-------------|
-| Titel-Eingabe | `st.text_input` | st.text_input |
-| Kategorie-Dropdown | `st.selectbox` | st.selectbox |
-| Datum-Picker | `st.date_input` | st.date_input |
-| Erstellen-Button | `st.button(type="primary")` | st.button / primary |
-| Filter-Radio | `st.radio(horizontal=True)` | st.radio |
-| Checkbox | `st.checkbox` | st.checkbox |
-| Statistik | `st.metric` | st.metric |
-| Fortschritt | `st.progress` | st.progress |
+```
+To-Do-App-SE1/
+├── app.py                    # Einstiegspunkt (initialisiert MVC)
+├── requirements.txt          # Python-Abhängigkeiten
+├── pytest.ini                # Pytest-Konfiguration
+├── conftest.py               # Pytest-Fixtures
+├── .coveragerc               # Coverage-Konfiguration
+├── .streamlit/
+│   └── config.toml           # Streamlit-Theme
+├── data/
+│   └── tasks.json            # Persistente Datenspeicherung
+├── designs/
+│   ├── ToDo_Desktop.svg      # Desktop-Design (SVG)
+│   ├── ToDo_Desktop.png      # Desktop-Design (PNG-Vorschau)
+│   ├── ToDo_Mobile.svg       # Mobile-Design (SVG)
+│   └── ToDo_Mobile.png       # Mobile-Design (PNG-Vorschau)
+├── src/
+│   ├── model.py              # Model: Task-Datenklasse
+│   ├── repository.py         # Repository: Persistenz-Schicht
+│   ├── controller.py         # Controller: Geschäftslogik
+│   ├── patterns.py           # Design Patterns (Factory, Adapter, Mediator)
+│   └── view.py               # View: Streamlit-UI
+└── tests/
+    ├── test_unit.py           # Unit-Tests
+    ├── test_integration.py    # Integrationstests
+    ├── system_test.py         # Systemtests
+    └── test_e2e.py            # End-to-End-Tests
+```
 
 ---
 
-## Lizenz
+## Figma-Designs
 
-Dieses Projekt wurde für die DHBW Stuttgart - Software Engineering Vorlesung erstellt.
-#   T o - D o - A p p - S E 1 
- 
- 
+Im Ordner `designs/` befinden sich die Designs für Desktop und Mobile als SVG- und PNG-Dateien. Die SVG-Dateien können in Figma importiert werden, zeigen jedoch nicht die spezifischen Icons an. Die PNG-Dateien zeigen das tatsächliche Design.
