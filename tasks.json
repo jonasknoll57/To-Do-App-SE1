@@ -18,7 +18,7 @@
   {
     "id": "8fa122e4",
     "title": "Brot kaufen",
-    "done": false,
+    "done": true,
     "category": "Einkauf",
     "due_date": "2026-01-12",
     "created_at": "2026-01-08T23:22:14.280548"

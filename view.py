@@ -7,27 +7,27 @@ from patterns import TaskMediator
 
 
 COLORS = {
-    # Primär – Indigo (Anker der gesamten Palette)
-    "primary":        "#4F46E5",   # Indigo 600 – Buttons, Links, aktive Elemente
-    "primary_hover":  "#4338CA",   # Indigo 700 – Hover-Zustand
-    "primary_light":  "#EEF2FF",   # Indigo 50  – Badge-Hintergrund, dezente Flächen
-    "primary_soft":   "#818CF8",   # Indigo 400 – Gradient-Endpunkt, Akzent
+    # Primär – Rot (Streamlit Red als Anker)
+    "primary":        "#FF4B4B",   # Streamlit Red – Buttons, aktive Elemente
+    "primary_hover":  "#E63E3E",   # Red 600      – Hover
+    "primary_light":  "#FEF2F2",   # Red 50       – Section-Header, Badge-Hintergrund
+    "primary_soft":   "#FCA5A5",   # Red 300      – Gradient-Endpunkt
 
     # Semantische Farben (jeweils mit heller Variante)
-    "success":        "#059669",   # Emerald 600 – Erledigt
+    "success":        "#059669",   # Emerald 600  – Erledigt
     "success_light":  "#ECFDF5",   # Emerald 50
-    "warning":        "#D97706",   # Amber 600   – Heute fällig
+    "warning":        "#D97706",   # Amber 600    – Heute fällig
     "warning_light":  "#FFFBEB",   # Amber 50
-    "danger":         "#DC2626",   # Red 600     – Überfällig, Löschen
-    "danger_light":   "#FEF2F2",   # Red 50
+    "danger":         "#991B1B",   # Red 800      – Überfällig, Löschen (dunkler als Primary)
+    "danger_light":   "#FEE2E2",   # Red 100
 
-    # Neutrale – Slate (bläulicher Unterton, harmoniert mit Indigo)
-    "text":           "#0F172A",   # Slate 900  – Primärtext
-    "text_secondary": "#475569",   # Slate 600  – Sekundärtext
-    "muted":          "#94A3B8",   # Slate 400  – Platzhalter, deaktiviert
-    "bg":             "#F8FAFC",   # Slate 50   – App-Hintergrund
+    # Neutrale – Gray (neutral, lässt Rot wirken)
+    "text":           "#111827",   # Gray 900   – Primärtext
+    "text_secondary": "#4B5563",   # Gray 600   – Sekundärtext
+    "muted":          "#9CA3AF",   # Gray 400   – Platzhalter, deaktiviert
+    "bg":             "#FAFAFA",   # Neutral 50 – App-Hintergrund
     "card":           "#FFFFFF",   # Weiß       – Karten, Container
-    "border":         "#E2E8F0",   # Slate 200  – Rahmen, Trennlinien
+    "border":         "#E5E7EB",   # Gray 200   – Rahmen, Trennlinien
 }
 
 CSS = f"""
@@ -57,10 +57,21 @@ html, body, [class*="css"] {{
 }}
 .section-header {{
   text-align: center;
-  color: {COLORS['text']};
+  color: {COLORS['primary']};
   font-size: 1.05rem;
   font-weight: 650;
-  margin: 1.0rem 0 0.75rem 0;
+  margin: 0 0.5rem 0.75rem 0.5rem;
+  padding: 0.6rem 1rem;
+  background: {COLORS['primary_light']};
+  border-radius: 10px;
+}}
+.filter-label {{
+  color: {COLORS['text_secondary']};
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
 }}
 
 /* --- Metric-Karten --- */
@@ -203,7 +214,7 @@ class TodoView:
         """App-Header mit Hilfe-Button."""
         c1, c2, c3 = st.columns([1, 6, 1])
         with c2:
-            st.markdown('<h1 class="main-header">✅ TODO-App</h1>', unsafe_allow_html=True)
+            st.markdown('<h1 class="main-header">TODO-App</h1>', unsafe_allow_html=True)
             st.markdown('<p class="sub-header">Organisiere deine Aufgaben einfach und effizient</p>', unsafe_allow_html=True)
         with c3:
             with st.popover("❓"):
@@ -226,109 +237,121 @@ class TodoView:
     def render_add_task_form(self):
         """Formular zum Hinzufügen neuer Tasks (neu sortiert)."""
         with st.container(border=True):
-            self._header("➕ Neue Aufgabe")
+            self._header("Neue Aufgabe hinzufügen")
 
-            # 1) 2er Container: Aufgabenname + Datum
-            r1c1, r1c2 = st.columns([3, 2], gap="medium")
-            with r1c1:
-                new_title = st.text_input(
-                    "Titel",
-                    placeholder="Was möchtest du erledigen?",
-                    label_visibility="collapsed",
-                    key="new_task_input",
-                )
-            with r1c2:
-                new_due = st.date_input(
-                    "Datum",
-                    value=None,
-                    min_value=date.today(),
-                    label_visibility="collapsed",
-                    key="new_due",
-                )
-
-            # 2) 1er: Kategorie (volle Breite)
-            cat_options = ["Kategorie..."] + st.session_state.categories
-            cat_idx = st.selectbox(
-                "Kategorie",
-                options=range(len(cat_options)),
-                format_func=lambda i: cat_options[i],
-                label_visibility="collapsed",
-                key="new_cat",
-                index=0,
-            )
-            new_category = "" if cat_idx == 0 else cat_options[cat_idx]
-
-            # 3) 1er: Erstellen (volle Breite)
-            if st.button(
-                "Erstellen",
-                type="primary",
-                use_container_width=True,
-                help="Task erstellen",
-                key="create_task_btn",
-            ):
-                if new_title:
-                    self.mediator.add_task(new_title, category=new_category, due_date=new_due)
-                    st.rerun()
-                else:
-                    st.toast("⚠️ Bitte Titel eingeben")
-
-            # 4) 1er: Kategorien verwalten (volle Breite)
-            with st.expander("📁 Kategorien verwalten", expanded=False):
-                c1, c2 = st.columns([2, 1], gap="small")
-
-                with c1:
-                    new_cat = st.text_input(
-                        "Neu",
-                        key="add_cat_input",
-                        placeholder="z.B. Sport",
+            _, form_col, _ = st.columns([0.3, 9.4, 0.3])
+            with form_col:
+                # 1) 2er Container: Aufgabenname + Datum
+                r1c1, r1c2 = st.columns([3, 2], gap="medium")
+                with r1c1:
+                    new_title = st.text_input(
+                        "Titel",
+                        placeholder="Was möchtest du erledigen?",
                         label_visibility="collapsed",
+                        key="new_task_input",
                     )
-                    if st.button("➕ Hinzufügen", key="add_cat_btn", use_container_width=True):
-                        if new_cat and new_cat not in st.session_state.categories:
-                            st.session_state.categories.append(new_cat)
-                            st.rerun()
+                with r1c2:
+                    new_due = st.date_input(
+                        "Datum",
+                        value=None,
+                        min_value=date.today(),
+                        label_visibility="collapsed",
+                        key="new_due",
+                    )
 
-                with c2:
-                    if st.session_state.categories:
-                        del_cat = st.selectbox(
-                            "Del",
-                            st.session_state.categories,
-                            key="del_cat_select",
+                # 2) 1er: Kategorie (volle Breite)
+                cat_options = ["Kategorie..."] + st.session_state.categories
+                cat_idx = st.selectbox(
+                    "Kategorie",
+                    options=range(len(cat_options)),
+                    format_func=lambda i: cat_options[i],
+                    label_visibility="collapsed",
+                    key="new_cat",
+                    index=0,
+                )
+                new_category = "" if cat_idx == 0 else cat_options[cat_idx]
+
+                # 3) 1er: Erstellen (volle Breite)
+                if st.button(
+                    "Erstellen",
+                    type="primary",
+                    use_container_width=True,
+                    help="Task erstellen",
+                    key="create_task_btn",
+                ):
+                    if new_title:
+                        self.mediator.add_task(new_title, category=new_category, due_date=new_due)
+                        st.rerun()
+                    else:
+                        st.toast("⚠️ Bitte Titel eingeben")
+
+                # 4) 1er: Kategorien verwalten (volle Breite)
+                with st.expander("📁 Kategorien verwalten", expanded=False):
+                    c1, c2 = st.columns([2, 1], gap="small")
+
+                    with c1:
+                        new_cat = st.text_input(
+                            "Neu",
+                            key="add_cat_input",
+                            placeholder="z.B. Sport",
                             label_visibility="collapsed",
                         )
-                        if st.button("🗑️ Löschen", key="del_cat_btn", use_container_width=True):
-                            st.session_state.categories.remove(del_cat)
-                            st.rerun()
+                        if st.button("➕ Hinzufügen", key="add_cat_btn", use_container_width=True):
+                            if new_cat and new_cat not in st.session_state.categories:
+                                st.session_state.categories.append(new_cat)
+                                st.rerun()
+
+                    with c2:
+                        if st.session_state.categories:
+                            del_cat = st.selectbox(
+                                "Del",
+                                st.session_state.categories,
+                                key="del_cat_select",
+                                label_visibility="collapsed",
+                            )
+                            if st.button("🗑️ Löschen", key="del_cat_btn", use_container_width=True):
+                                st.session_state.categories.remove(del_cat)
+                                st.rerun()
 
     
     def render_task_section(self):
         """Filter + Task-Liste kombiniert."""
         with st.container(border=True):
-            self._header("📋 Meine Aufgaben")
-            
-            c1, c2, c3 = st.columns([2, 2, 1])
+            self._header("Meine Aufgaben")
+
+            st.markdown('<p class="filter-label">Filter</p>', unsafe_allow_html=True)
+            c1, c2, c3 = st.columns([3, 2, 1], vertical_alignment="center")
             with c1:
-                status = st.radio("Status", ["Alle", "Offen", "Erledigt"], horizontal=True, label_visibility="collapsed")
+                status = st.segmented_control(
+                    "Status",
+                    options=["Alle", "Offen", "Erledigt"],
+                    default="Alle",
+                    label_visibility="collapsed",
+                    key="status_filter",
+                )
+                if status is None:
+                    status = "Alle"
             with c2:
-                cats = ["Alle"] + self.mediator.get_categories()
-                cat = st.selectbox("Filter", cats, label_visibility="collapsed")
+                cats = ["Alle Kategorien"] + self.mediator.get_categories()
+                cat_sel = st.selectbox("Kategorie", cats, label_visibility="collapsed")
+                cat = "Alle" if cat_sel == "Alle Kategorien" else cat_sel
             with c3:
                 st.session_state.smart_sort = st.toggle("🎯", value=st.session_state.smart_sort, help="Smart-Sort: Dringende zuerst")
-            
-            st.divider()
 
             if st.session_state.smart_sort:
-                st.markdown('<p class="smart-info">🎯 Sortiert: Überfällig → Heute → Datum</p>', unsafe_allow_html=True)
-            
+                st.markdown('<p class="smart-info">🎯 Überfällig → Heute → Datum</p>', unsafe_allow_html=True)
+
             tasks = self._get_tasks(status, cat)
             if not tasks:
                 st.markdown('<div class="empty-list">🎉 Keine Aufgaben – erstelle eine neue!</div>', unsafe_allow_html=True)
             else:
-                for task in tasks:
-                    if st.session_state.edit_id == task.id:
-                        self._render_edit_form(task)
-                    else:
-                        self._render_task_item(task)
+                _, task_col, _ = st.columns([0.3, 9.4, 0.3])
+                with task_col:
+                    for task in tasks:
+                        if st.session_state.edit_id == task.id:
+                            self._render_edit_form(task)
+                        else:
+                            self._render_task_item(task)
     
     def _get_tasks(self, status: str, category: str) -> List[Task]:
         """Gibt gefilterte Task-Liste zurück."""
@@ -355,80 +378,80 @@ class TodoView:
         Checkbox | Titel + Meta (Kategorie + Datum) | Edit | Delete
         """
 
-        # Reduzierte, ruhigere Spaltenstruktur
-        c1, c2, c3, c4 = st.columns([0.5, 4.5, 0.7, 0.7], gap="small")
+        with st.container(border=True):
+            c1, c2, c3, c4 = st.columns([0.5, 4.5, 0.7, 0.7], gap="small")
 
-        # Checkbox
-        with c1:
-            checked = st.checkbox(
-                "done",
-                value=task.done,
-                key=f"cb_{task.id}",
-                label_visibility="collapsed"
-            )
-            if checked != task.done:
-                self.mediator.toggle_task(task.id)
-                st.rerun()
-
-        # Titel + Meta
-        with c2:
-            title_class = "task-done" if task.done else ""
-            st.markdown(
-                f'<div class="{title_class}">{task.title}</div>',
-                unsafe_allow_html=True
-            )
-
-            # Meta-Zeile (Kategorie · Datum)
-            meta_parts = []
-
-            if task.category:
-                meta_parts.append(
-                    f'<span class="category-badge">{task.category}</span>'
+            # Checkbox
+            with c1:
+                checked = st.checkbox(
+                    "done",
+                    value=task.done,
+                    key=f"cb_{task.id}",
+                    label_visibility="collapsed"
                 )
-
-            if task.due_date and not task.done:
-                if task.is_overdue():
-                    meta_parts.append(
-                        f'<span class="date-overdue">⚠️ {task.due_date.strftime("%d.%m.")}</span>'
-                    )
-                elif task.is_due_today():
-                    meta_parts.append(
-                        '<span class="date-today">📅 Heute</span>'
-                    )
-                else:
-                    meta_parts.append(
-                        f'<span class="date-normal">📅 {task.due_date.strftime("%d.%m.")}</span>'
-                    )
-
-            if meta_parts:
-                st.markdown(
-                    '<div style="margin-top:2px; display:flex; gap:8px; align-items:center;">'
-                    + "".join(meta_parts) +
-                    '</div>',
-                    unsafe_allow_html=True
-                )
-
-        # Edit
-        with c3:
-            if st.button("✏️", key=f"edit_{task.id}", use_container_width=True):
-                st.session_state.edit_id = task.id
-                st.rerun()
-
-        # Delete
-        with c4:
-            with st.popover("🗑️", use_container_width=True):
-                st.markdown(
-                    '<p class="delete-warning">⚠️ Wirklich endgültig löschen?</p>',
-                    unsafe_allow_html=True
-                )
-                st.caption(f'"{task.title}"')
-                if st.button(
-                    "🗑️ Ja, löschen",
-                    key=f"confirm_del_{task.id}",
-                    use_container_width=True
-                ):
-                    self.mediator.delete_task(task.id)
+                if checked != task.done:
+                    self.mediator.toggle_task(task.id)
                     st.rerun()
+
+            # Titel + Meta
+            with c2:
+                title_class = "task-done" if task.done else ""
+                st.markdown(
+                    f'<div class="{title_class}">{task.title}</div>',
+                    unsafe_allow_html=True
+                )
+
+                # Meta-Zeile (Kategorie · Datum)
+                meta_parts = []
+
+                if task.category:
+                    meta_parts.append(
+                        f'<span class="category-badge">{task.category}</span>'
+                    )
+
+                if task.due_date and not task.done:
+                    if task.is_overdue():
+                        meta_parts.append(
+                            f'<span class="date-overdue">⚠️ {task.due_date.strftime("%d.%m.")}</span>'
+                        )
+                    elif task.is_due_today():
+                        meta_parts.append(
+                            '<span class="date-today">📅 Heute</span>'
+                        )
+                    else:
+                        meta_parts.append(
+                            f'<span class="date-normal">📅 {task.due_date.strftime("%d.%m.")}</span>'
+                        )
+
+                if meta_parts:
+                    st.markdown(
+                        '<div style="margin-top:2px; display:flex; gap:8px; align-items:center;">'
+                        + "".join(meta_parts) +
+                        '</div>',
+                        unsafe_allow_html=True
+                    )
+
+            # Edit
+            with c3:
+                if st.button("✏️", key=f"edit_{task.id}", use_container_width=True):
+                    st.session_state.edit_id = task.id
+                    st.rerun()
+
+            # Delete
+            with c4:
+                with st.popover("🗑️", use_container_width=True):
+                    st.markdown(
+                        '<p class="delete-warning">⚠️ Wirklich endgültig löschen?</p>',
+                        unsafe_allow_html=True
+                    )
+                    st.caption(f'"{task.title}"')
+                    if st.button(
+                        "🗑️ Ja, löschen",
+                        key=f"confirm_del_{task.id}",
+                        use_container_width=True
+                    ):
+                        self.mediator.delete_task(task.id)
+                        st.rerun()
 
     
     def _render_edit_form(self, task: Task):
@@ -459,34 +482,34 @@ class TodoView:
     def render_statistics(self):
         """Kompakte Statistik-Sektion mit Fortschritt."""
         with st.container(border=True):
-            self._header("📊 Fortschritt")
-
+            self._header("Fortschritt")
 
             stats = self.mediator.controller.get_statistics()
             if stats["total"] == 0:
                 return
-            
-            pct = int(stats['progress'] * 100)
-            
-            # 3 Metrics + Platzhalter (gleiche Breite)
-            c1, c2, c3 = st.columns(3)
-            c1.metric("📝 Gesamt", stats["total"])
-            c2.metric("⏳ Offen", stats["open"])
-            c3.metric("✅ Erledigt", stats["done"])
 
-            # Progress mit zentriertem Prozent (gleiche Farbe wie Bar)
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.markdown(f'''
-                <div style="text-align: center;">
-                    <div style="font-size: 1.5em; font-weight: bold; color: {COLORS['primary']}; margin-bottom: 8px;">
-                        {pct}%
+            pct = int(stats['progress'] * 100)
+
+            _, stats_col, _ = st.columns([0.3, 9.4, 0.3])
+            with stats_col:
+                c1, c2, c3 = st.columns(3)
+                c1.metric("📝 Gesamt", stats["total"])
+                c2.metric("⏳ Offen", stats["open"])
+                c3.metric("✅ Erledigt", stats["done"])
+
+                # Progress mit zentriertem Prozent
+                col1, col2, col3 = st.columns([0.5, 3, 0.5])
+                with col2:
+                    st.markdown(f'''
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: {COLORS['primary']}; margin-bottom: 8px;">
+                            {pct}%
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {pct}%;"></div>
+                        </div>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {pct}%;"></div>
-                    </div>
-                </div>
-                ''', unsafe_allow_html=True)
+                    ''', unsafe_allow_html=True)
 
     def render(self):
         st.markdown(CSS, unsafe_allow_html=True)
