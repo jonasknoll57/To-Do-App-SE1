@@ -235,13 +235,13 @@ class TodoView:
                 ''', unsafe_allow_html=True)
     
     def render_add_task_form(self):
-        """Formular zum Hinzufügen neuer Tasks (neu sortiert)."""
+        """Formular zum Hinzufügen neuer Tasks."""
         with st.container(border=True):
             self._header("Neue Aufgabe hinzufügen")
 
             _, form_col, _ = st.columns([0.3, 9.4, 0.3])
             with form_col:
-                # 1) 2er Container: Aufgabenname + Datum
+                # 1) Titel + Datum
                 r1c1, r1c2 = st.columns([3, 2], gap="medium")
                 with r1c1:
                     new_title = st.text_input(
@@ -259,19 +259,45 @@ class TodoView:
                         key="new_due",
                     )
 
-                # 2) 1er: Kategorie (volle Breite)
-                cat_options = ["Kategorie..."] + st.session_state.categories
-                cat_idx = st.selectbox(
-                    "Kategorie",
-                    options=range(len(cat_options)),
-                    format_func=lambda i: cat_options[i],
-                    label_visibility="collapsed",
-                    key="new_cat",
-                    index=0,
-                )
-                new_category = "" if cat_idx == 0 else cat_options[cat_idx]
+                # 2) Kategorie wählen + Kategorien verwalten nebeneinander
+                cat_col, manage_col = st.columns([2, 3], gap="medium")
 
-                # 3) 1er: Erstellen (volle Breite)
+                with cat_col:
+                    cat_options = ["Kategorie..."] + st.session_state.categories
+                    cat_idx = st.selectbox(
+                        "Kategorie",
+                        options=range(len(cat_options)),
+                        format_func=lambda i: cat_options[i],
+                        label_visibility="collapsed",
+                        key="new_cat",
+                        index=0,
+                    )
+                    new_category = "" if cat_idx == 0 else cat_options[cat_idx]
+
+                with manage_col:
+                    with st.popover("Kategorien verwalten", use_container_width=True):
+                        new_cat = st.text_input(
+                            "Neue Kategorie",
+                            key="add_cat_input",
+                            placeholder="z.B. Sport",
+                        )
+                        if st.button("Hinzufügen", key="add_cat_btn", use_container_width=True):
+                            if new_cat and new_cat not in st.session_state.categories:
+                                st.session_state.categories.append(new_cat)
+                                st.rerun()
+
+                        if st.session_state.categories:
+                            st.divider()
+                            del_cat = st.selectbox(
+                                "Kategorie entfernen",
+                                st.session_state.categories,
+                                key="del_cat_select",
+                            )
+                            if st.button("Entfernen", key="del_cat_btn", use_container_width=True):
+                                st.session_state.categories.remove(del_cat)
+                                st.rerun()
+
+                # 3) Erstellen-Button ganz unten
                 if st.button(
                     "Erstellen",
                     type="primary",
@@ -285,38 +311,10 @@ class TodoView:
                     else:
                         st.toast("⚠️ Bitte Titel eingeben")
 
-                # 4) 1er: Kategorien verwalten (volle Breite)
-                with st.expander("Kategorien verwalten", expanded=False):
-                    c1, c2 = st.columns([2, 1], gap="small")
-
-                    with c1:
-                        new_cat = st.text_input(
-                            "Neu",
-                            key="add_cat_input",
-                            placeholder="z.B. Sport",
-                            label_visibility="collapsed",
-                        )
-                        if st.button("➕ Hinzufügen", key="add_cat_btn", use_container_width=True):
-                            if new_cat and new_cat not in st.session_state.categories:
-                                st.session_state.categories.append(new_cat)
-                                st.rerun()
-
-                    with c2:
-                        if st.session_state.categories:
-                            del_cat = st.selectbox(
-                                "Del",
-                                st.session_state.categories,
-                                key="del_cat_select",
-                                label_visibility="collapsed",
-                            )
-                            if st.button("🗑️ Löschen", key="del_cat_btn", use_container_width=True):
-                                st.session_state.categories.remove(del_cat)
-                                st.rerun()
-
     
     def render_task_section(self):
         """Filter + Task-Liste kombiniert."""
-        with st.container(border=True, height=595):
+        with st.container(border=True, height=540):
             self._header("Meine Aufgaben")
 
             st.markdown('<p class="filter-label">Filter</p>', unsafe_allow_html=True)
