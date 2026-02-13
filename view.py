@@ -286,7 +286,7 @@ class TodoView:
                         st.toast("⚠️ Bitte Titel eingeben")
 
                 # 4) 1er: Kategorien verwalten (volle Breite)
-                with st.expander("📁 Kategorien verwalten", expanded=False):
+                with st.expander("Kategorien verwalten", expanded=False):
                     c1, c2 = st.columns([2, 1], gap="small")
 
                     with c1:
