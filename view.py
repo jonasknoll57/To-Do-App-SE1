@@ -7,71 +7,83 @@ from patterns import TaskMediator
 
 
 COLORS = {
-    "primary": "#0C55F3",
-    "success": "#16A34A",
-    "warning": "#D97706",
-    "danger":  "#DC2626",
-    "text":    "#111827",
-    "muted":   "#6B7280",
-    "bg":      "#F4F3F06F",
-    "card":    "#FFFFFF",
-    "border":  "#E5E7EB",
+    # Primär – Indigo (Anker der gesamten Palette)
+    "primary":        "#4F46E5",   # Indigo 600 – Buttons, Links, aktive Elemente
+    "primary_hover":  "#4338CA",   # Indigo 700 – Hover-Zustand
+    "primary_light":  "#EEF2FF",   # Indigo 50  – Badge-Hintergrund, dezente Flächen
+    "primary_soft":   "#818CF8",   # Indigo 400 – Gradient-Endpunkt, Akzent
+
+    # Semantische Farben (jeweils mit heller Variante)
+    "success":        "#059669",   # Emerald 600 – Erledigt
+    "success_light":  "#ECFDF5",   # Emerald 50
+    "warning":        "#D97706",   # Amber 600   – Heute fällig
+    "warning_light":  "#FFFBEB",   # Amber 50
+    "danger":         "#DC2626",   # Red 600     – Überfällig, Löschen
+    "danger_light":   "#FEF2F2",   # Red 50
+
+    # Neutrale – Slate (bläulicher Unterton, harmoniert mit Indigo)
+    "text":           "#0F172A",   # Slate 900  – Primärtext
+    "text_secondary": "#475569",   # Slate 600  – Sekundärtext
+    "muted":          "#94A3B8",   # Slate 400  – Platzhalter, deaktiviert
+    "bg":             "#F8FAFC",   # Slate 50   – App-Hintergrund
+    "card":           "#FFFFFF",   # Weiß       – Karten, Container
+    "border":         "#E2E8F0",   # Slate 200  – Rahmen, Trennlinien
 }
 
 CSS = f"""
 <style>
 .stApp {{
-  background:{COLORS['bg']};
-  color: #111827;
+  background: {COLORS['bg']};
+  color: {COLORS['text']};
 }}
 
 html, body, [class*="css"] {{
   font-size: 16px;
 }}
 
+/* --- Header --- */
 .main-header {{
-  text-align:center;
-  color:{COLORS['text']};
+  text-align: center;
+  color: {COLORS['text']};
   font-size: 1.9rem;
   font-weight: 750;
   margin: 0.25rem 0 0 0;
 }}
 .sub-header {{
-  text-align:center;
-  color:{COLORS['muted']};
+  text-align: center;
+  color: {COLORS['text_secondary']};
   font-size: 0.95rem;
   margin: 0.35rem 0 1.0rem 0;
 }}
-
 .section-header {{
-  text-align:center;
-  color:{COLORS['text']};
+  text-align: center;
+  color: {COLORS['text']};
   font-size: 1.05rem;
   font-weight: 650;
   margin: 1.0rem 0 0.75rem 0;
 }}
 
+/* --- Metric-Karten --- */
 div[data-testid="stMetric"] {{
   background: {COLORS['card']};
   border: 1px solid {COLORS['border']};
   border-radius: 12px;
   padding: 0.75rem;
-  box-shadow: 0 1px 0 rgba(17,24,39,0.03);
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.02);
 }}
-
 div[data-testid="stMetric"] label {{
   font-size: 0.8rem !important;
-  color: {COLORS['muted']} !important;
+  color: {COLORS['text_secondary']} !important;
 }}
-
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   font-size: 1.6rem !important;
   color: {COLORS['text']} !important;
 }}
 
-/* Inputs / Selects / Buttons */
+/* --- Inputs / Buttons --- */
 .stTextInput input, .stSelectbox div[data-baseweb="select"] {{
   border-radius: 10px !important;
+  border-color: {COLORS['border']} !important;
 }}
 .stButton > button {{
   border-radius: 10px;
@@ -79,9 +91,9 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   padding: 0.45rem 0.75rem;
 }}
 
-/* Badge */
+/* --- Kategorie-Badge (Pill) --- */
 .category-badge {{
-  background: rgba(37,99,235,0.10);
+  background: {COLORS['primary_light']};
   color: {COLORS['primary']};
   padding: 2px 10px;
   border-radius: 999px;
@@ -90,23 +102,40 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   display: inline-block;
 }}
 
-/* Dates */
-.date-overdue {{ color: {COLORS['danger']}; font-weight: 650; font-size: 0.85rem; }}
-.date-today   {{ color: {COLORS['warning']}; font-weight: 650; font-size: 0.85rem; }}
-.date-normal  {{ color: {COLORS['muted']}; font-size: 0.85rem; }}
+/* --- Datum-Labels (Pill-Stil mit Hintergrund) --- */
+.date-overdue {{
+  background: {COLORS['danger_light']};
+  color: {COLORS['danger']};
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 0.78rem;
+}}
+.date-today {{
+  background: {COLORS['warning_light']};
+  color: {COLORS['warning']};
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 0.78rem;
+}}
+.date-normal {{
+  color: {COLORS['text_secondary']};
+  font-size: 0.82rem;
+}}
 
-/* Done task */
+/* --- Erledigter Task --- */
 .task-done {{
   text-decoration: line-through;
   color: {COLORS['muted']};
 }}
 
-/* Task row spacing: klare Zeilenhöhe */
+/* --- Task-Zeile --- */
 .task-row {{
   padding: 0.35rem 0;
 }}
 
-/* Progress */
+/* --- Fortschrittsbalken (Gradient) --- */
 .progress-bar {{
   background: {COLORS['border']};
   border-radius: 999px;
@@ -114,26 +143,41 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   overflow: hidden;
 }}
 .progress-fill {{
-  background: {COLORS['primary']};
+  background: linear-gradient(90deg, {COLORS['primary']}, {COLORS['primary_soft']});
   height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
 }}
 
-
-/* Smart info dezenter */
+/* --- Smart-Sort Info --- */
 .smart-info {{
-  color: {COLORS['muted']};
+  color: {COLORS['text_secondary']};
   font-size: 0.8rem;
   text-align: center;
   margin: 0.25rem 0 0.75rem 0;
 }}
 
-/* Mobile */
+/* --- Leere Liste --- */
+.empty-list {{
+  text-align: center;
+  color: {COLORS['muted']};
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}}
+
+/* --- Lösch-Warnung --- */
+.delete-warning {{
+  color: {COLORS['danger']};
+  font-weight: 600;
+  font-size: 0.9rem;
+}}
+
+/* --- Mobile --- */
 @media (max-width: 640px) {{
   .main-header {{ font-size: 1.6rem; }}
   .sub-header {{ font-size: 0.9rem; }}
   .category-badge {{ font-size: 0.65rem; }}
 }}
-
 </style>
 """
 
@@ -230,7 +274,7 @@ class TodoView:
 
             # 4) 1er: Kategorien verwalten (volle Breite)
             with st.expander("📁 Kategorien verwalten", expanded=False):
-                c1, c2, c3 = st.columns([2, 1, 1], gap="small")
+                c1, c2 = st.columns([2, 1], gap="small")
 
                 with c1:
                     new_cat = st.text_input(
@@ -239,14 +283,12 @@ class TodoView:
                         placeholder="z.B. Sport",
                         label_visibility="collapsed",
                     )
-
-                with c2:
-                    if st.button("➕ Hinzu", key="add_cat_btn", use_container_width=True):
+                    if st.button("➕ Hinzufügen", key="add_cat_btn", use_container_width=True):
                         if new_cat and new_cat not in st.session_state.categories:
                             st.session_state.categories.append(new_cat)
                             st.rerun()
 
-                with c3:
+                with c2:
                     if st.session_state.categories:
                         del_cat = st.selectbox(
                             "Del",
@@ -254,7 +296,7 @@ class TodoView:
                             key="del_cat_select",
                             label_visibility="collapsed",
                         )
-                        if st.button("🗑️", key="del_cat_btn", use_container_width=True):
+                        if st.button("🗑️ Löschen", key="del_cat_btn", use_container_width=True):
                             st.session_state.categories.remove(del_cat)
                             st.rerun()
 
