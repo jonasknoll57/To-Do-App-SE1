@@ -316,7 +316,7 @@ class TodoView:
     
     def render_task_section(self):
         """Filter + Task-Liste kombiniert."""
-        with st.container(border=True):
+        with st.container(border=True, height=595):
             self._header("Meine Aufgaben")
 
             st.markdown('<p class="filter-label">Filter</p>', unsafe_allow_html=True)
