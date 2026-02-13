@@ -5,7 +5,7 @@ from patterns import TaskMediator
 from view import TodoView
 
 
-# === PAGE CONFIG ===
+# Config
 st.set_page_config(
     page_title="TODO-App",
     page_icon="✅",
@@ -13,12 +13,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-
+# Initialisierung
 def init_app():
-    """
-    Initialisiert Anwendung
-    Session State
-    """
     if "mediator" not in st.session_state:
         repository = JSONTaskRepository("tasks.json")
         

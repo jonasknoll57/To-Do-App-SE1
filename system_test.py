@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Systemtests für die TODO-App.
-Testet das gesamte System technisch, kontrolliert.
-
-Ausführung mit Coverage:
-    pytest system_test.py -v --cov=. --cov-report=term-missing
-"""
 import pytest
 import sys
 import os
@@ -20,8 +12,7 @@ from patterns import TaskMediator, TaskFactory, ExternalTaskFormat
 
 
 class TestTodoSystem:
-    """Systemtests: Gesamtsystem prüfen."""
-    
+
     @pytest.fixture
     def system(self):
         repo = InMemoryTaskRepository()
@@ -30,7 +21,6 @@ class TestTodoSystem:
         return mediator
     
     def test_full_lifecycle(self, system):
-        """Vollständiger Lebenszyklus: Create -> Update -> Toggle -> Delete."""
         # CREATE
         task = system.add_task("Lifecycle", category="Test", due_date=date.today())
         assert len(system.get_all_tasks()) == 1
@@ -48,7 +38,6 @@ class TestTodoSystem:
         assert len(system.get_all_tasks()) == 0
     
     def test_persistence_across_sessions(self, tmp_path):
-        """Tasks bleiben nach Neustart erhalten."""
         filepath = str(tmp_path / "tasks.json")
         
         # Session 1
@@ -65,7 +54,6 @@ class TestTodoSystem:
         assert len(ctrl2.get_all()) == 1
     
     def test_system_import_external(self, system):
-        """System importiert externe Tasks."""
         # Arrange
         externals = [
             ExternalTaskFormat(name="Import 1", completed=0, tag="API"),
@@ -80,17 +68,13 @@ class TestTodoSystem:
         assert len(system.get_all_tasks()) == 2
     
     def test_system_statistics(self, system):
-        """System Statistiken korrekt."""
-        # Arrange
         system.add_task("Task 1")
         system.add_task("Task 2")
         task3 = system.add_task("Task 3")
         system.toggle_task(task3.id)
         
-        # Act
         stats = system.controller.get_statistics()
         
-        # Assert
         assert stats["total"] == 3
         assert stats["done"] == 1
         assert stats["open"] == 2

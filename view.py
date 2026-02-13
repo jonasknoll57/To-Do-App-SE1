@@ -5,29 +5,29 @@ from model import Task
 from patterns import TaskMediator
 
 
-
+# Zentrale Farben defineiren
 COLORS = {
-    # Primär – Rot (Streamlit Red als Anker)
-    "primary":        "#FF4B4B",   # Streamlit Red – Buttons, aktive Elemente
-    "primary_hover":  "#E63E3E",   # Red 600      – Hover
-    "primary_light":  "#FEF2F2",   # Red 50       – Section-Header, Badge-Hintergrund
-    "primary_soft":   "#FCA5A5",   # Red 300      – Gradient-Endpunkt
+    # Primär
+    "primary":        "#FF4B4B",
+    "primary_hover":  "#E63E3E", 
+    "primary_light":  "#FEF2F2", 
+    "primary_soft":   "#FCA5A5", 
 
-    # Semantische Farben (jeweils mit heller Variante)
-    "success":        "#059669",   # Emerald 600  – Erledigt
-    "success_light":  "#ECFDF5",   # Emerald 50
-    "warning":        "#D97706",   # Amber 600    – Heute fällig
-    "warning_light":  "#FFFBEB",   # Amber 50
-    "danger":         "#991B1B",   # Red 800      – Überfällig, Löschen (dunkler als Primary)
-    "danger_light":   "#FEE2E2",   # Red 100
+    # Status Farben
+    "success":        "#059669",  
+    "success_light":  "#ECFDF5",  
+    "warning":        "#D97706",  
+    "warning_light":  "#FFFBEB",  
+    "danger":         "#991B1B",  
+    "danger_light":   "#FEE2E2",   
 
-    # Neutrale – Gray (neutral, lässt Rot wirken)
-    "text":           "#111827",   # Gray 900   – Primärtext
-    "text_secondary": "#4B5563",   # Gray 600   – Sekundärtext
-    "muted":          "#9CA3AF",   # Gray 400   – Platzhalter, deaktiviert
-    "bg":             "#FAFAFA",   # Neutral 50 – App-Hintergrund
-    "card":           "#FFFFFF",   # Weiß       – Karten, Container
-    "border":         "#E5E7EB",   # Gray 200   – Rahmen, Trennlinien
+    # Neutrale Farben
+    "text":           "#111827",
+    "text_secondary": "#4B5563", 
+    "muted":          "#9CA3AF", 
+    "bg":             "#FAFAFA", 
+    "card":           "#FFFFFF",
+    "border":         "#E5E7EB", 
 }
 
 CSS = f"""
@@ -41,7 +41,6 @@ html, body, [class*="css"] {{
   font-size: 16px;
 }}
 
-/* --- Header --- */
 .main-header {{
   text-align: center;
   color: {COLORS['text']};
@@ -74,7 +73,6 @@ html, body, [class*="css"] {{
   margin-bottom: 0.3rem;
 }}
 
-/* --- Metric-Karten --- */
 div[data-testid="stMetric"] {{
   background: {COLORS['card']};
   border: 1px solid {COLORS['border']};
@@ -91,7 +89,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   color: {COLORS['text']} !important;
 }}
 
-/* --- Inputs / Buttons --- */
 .stTextInput input, .stSelectbox div[data-baseweb="select"] {{
   border-radius: 10px !important;
   border-color: {COLORS['border']} !important;
@@ -102,7 +99,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   padding: 0.45rem 0.75rem;
 }}
 
-/* --- Kategorie-Badge (Pill) --- */
 .category-badge {{
   background: {COLORS['primary_light']};
   color: {COLORS['primary']};
@@ -113,7 +109,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   display: inline-block;
 }}
 
-/* --- Datum-Labels (Pill-Stil mit Hintergrund) --- */
 .date-overdue {{
   background: {COLORS['danger_light']};
   color: {COLORS['danger']};
@@ -135,18 +130,15 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   font-size: 0.82rem;
 }}
 
-/* --- Erledigter Task --- */
 .task-done {{
   text-decoration: line-through;
   color: {COLORS['muted']};
 }}
 
-/* --- Task-Zeile --- */
 .task-row {{
   padding: 0.35rem 0;
 }}
 
-/* --- Fortschrittsbalken (Gradient) --- */
 .progress-bar {{
   background: {COLORS['border']};
   border-radius: 999px;
@@ -160,7 +152,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   transition: width 0.4s ease;
 }}
 
-/* --- Smart-Sort Info --- */
 .smart-info {{
   color: {COLORS['text_secondary']};
   font-size: 0.8rem;
@@ -168,7 +159,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   margin: 0.25rem 0 0.75rem 0;
 }}
 
-/* --- Leere Liste --- */
 .empty-list {{
   text-align: center;
   color: {COLORS['muted']};
@@ -176,14 +166,12 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
   font-size: 0.95rem;
 }}
 
-/* --- Lösch-Warnung --- */
 .delete-warning {{
   color: {COLORS['danger']};
   font-weight: 600;
   font-size: 0.9rem;
 }}
 
-/* --- Mobile --- */
 @media (max-width: 640px) {{
   .main-header {{ font-size: 1.6rem; }}
   .sub-header {{ font-size: 0.9rem; }}
@@ -193,7 +181,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 """
 
 
-
+# Haupt-View Klasse
+# Verantwortlich für die gesamte UI-Logik und Interaktion mit dem Mediator
 class TodoView:
     
     def __init__(self, mediator: TaskMediator):
@@ -207,15 +196,15 @@ class TodoView:
                 st.session_state[key] = val
     
     def _header(self, text: str):
-        """zentrierte Überschrift"""
         st.markdown(f'<div class="section-header">{text}</div>', unsafe_allow_html=True)
     
     def render_header(self):
-        """App-Header mit Hilfe-Button."""
         c1, c2, c3 = st.columns([1, 6, 1])
         with c2:
             st.markdown('<h1 class="main-header">TODO-App</h1>', unsafe_allow_html=True)
             st.markdown('<p class="sub-header">Organisiere deine Aufgaben einfach und effizient</p>', unsafe_allow_html=True)
+        
+        # Hilfe PopUp
         with c3:
             with st.popover("❓"):
                 st.markdown('''
@@ -235,13 +224,12 @@ class TodoView:
                 ''', unsafe_allow_html=True)
     
     def render_add_task_form(self):
-        """Formular zum Hinzufügen neuer Tasks."""
         with st.container(border=True):
             self._header("Neue Aufgabe hinzufügen")
 
             _, form_col, _ = st.columns([0.3, 9.4, 0.3])
             with form_col:
-                # 1) Titel + Datum
+                # Titel + Datum
                 r1c1, r1c2 = st.columns([3, 2], gap="medium")
                 with r1c1:
                     new_title = st.text_input(
@@ -259,7 +247,7 @@ class TodoView:
                         key="new_due",
                     )
 
-                # 2) Kategorie wählen + Kategorien verwalten nebeneinander
+                # Kategorie wählen + Kategorien verwalten 
                 cat_col, manage_col = st.columns([2, 3], gap="medium")
 
                 with cat_col:
@@ -313,7 +301,6 @@ class TodoView:
 
     
     def render_task_section(self):
-        """Filter + Task-Liste kombiniert."""
         with st.container(border=True, height=540):
             self._header("Meine Aufgaben")
 
@@ -352,7 +339,6 @@ class TodoView:
                             self._render_task_item(task)
     
     def _get_tasks(self, status: str, category: str) -> List[Task]:
-        """Gibt gefilterte Task-Liste zurück."""
         if status == "Offen": tasks = self.mediator.get_open_tasks()
         elif status == "Erledigt": tasks = self.mediator.get_done_tasks()
         else: tasks = self.mediator.get_all_tasks()
@@ -371,10 +357,6 @@ class TodoView:
         return tasks
     
     def _render_task_item(self, task: Task):
-        """
-        Rendert ein Task-Item:
-        Checkbox | Titel + Meta (Kategorie + Datum) | Edit | Delete
-        """
 
         with st.container(border=True):
             c1, c2, c3, c4 = st.columns([0.5, 4.5, 0.7, 0.7], gap="small")
@@ -399,7 +381,7 @@ class TodoView:
                     unsafe_allow_html=True
                 )
 
-                # Meta-Zeile (Kategorie · Datum)
+                # Meta-Zeile (Kategorie, Datum)
                 meta_parts = []
 
                 if task.category:
@@ -453,7 +435,6 @@ class TodoView:
 
     
     def _render_edit_form(self, task: Task):
-        """Bearbeitungs-Formular kompakt."""
         with st.container(border=True):
             c1, c2, c3 = st.columns([3, 2, 2])
             with c1:
@@ -478,7 +459,6 @@ class TodoView:
                     st.rerun()
     
     def render_statistics(self):
-        """Kompakte Statistik-Sektion mit Fortschritt."""
         with st.container(border=True):
             self._header("Fortschritt")
 
