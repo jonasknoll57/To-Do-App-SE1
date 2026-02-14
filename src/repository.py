@@ -24,7 +24,7 @@ class TaskRepositoryInterface(ABC):
 
 # Konkrete Implementierung: JSON-Datei als Speicher
 class JSONTaskRepository(TaskRepositoryInterface):
-    def __init__(self, filepath: str = "tasks.json"):
+    def __init__(self, filepath: str = os.path.join(os.path.dirname(__file__), "..", "data", "tasks.json")):
         self.filepath = filepath
     
     def save(self, tasks: List[Task]) -> None:

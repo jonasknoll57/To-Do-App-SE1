@@ -1,13 +1,13 @@
 [run]
-source = .
-omit = 
+source = src
+omit =
     tests/*
     test_*.py
     *_test.py
     venv/*
     __pycache__/*
     .pytest_cache/*
-    view.py
+    src/view.py
     app.py
 
 [report]

@@ -143,19 +143,19 @@ pytest tests/test_unit.py tests/test_integration.py tests/system_test.py -v
 
 ```
 To-Do-App-SE1/
+├── README.md                   
 ├── app.py                    
 ├── requirements.txt          
 ├── pytest.ini                
 ├── conftest.py               
-├── .coveragerc               
-├── .streamlit/
-│   └── config.toml           
+├── .coveragerc                        
 ├── data/
 │   └── tasks.json            
 ├── Figma/
 │   ├── View_Final_Deskrop.fig
 │   ├── View_Final_Mobile.fig            
 ├── src/
+│   ├── __init__.py             
 │   ├── model.py              
 │   ├── repository.py         
 │   ├── controller.py         
