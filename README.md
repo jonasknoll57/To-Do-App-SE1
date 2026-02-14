@@ -3,13 +3,12 @@
 ## Inhaltsverzeichnis
 
 1. [MVC-Architektur](#mvc-architektur)
-2. [Funktionale Anforderungen](#funktionale-anforderungen)
-3. [Nicht-Funktionale Anforderungen](#nicht-funktionale-anforderungen)
-4. [UI-Dokumentation (Nielsen-Heuristiken)](#ui-dokumentation-nielsen-heuristiken)
-5. [Installation & Start](#installation--start)
-6. [Tests](#tests)
-7. [Projektstruktur](#projektstruktur)
-8. [Figma-Designs](#figma-designs)
+2. [(Nicht-) Funktionale Anforderungen](#nicht--funktionale-anforderungen)
+3. [UI-Dokumentation (Nielsen-Heuristiken)](#ui-dokumentation-nielsen-heuristiken)
+4. [Installation & Start](#installation--start)
+5. [Tests](#tests)
+6. [Projektstruktur](#projektstruktur)
+7. [Figma-Designs](#figma-designs)
 
 ---
 
@@ -17,23 +16,23 @@
 
 ### Warum ist MVC für eine TODO-App sinnvoll?
 
-MVC (Model-View-Controller) trennt die Anwendung in drei Schichten mit klaren Verantwortlichkeiten. Diese Architektur ist für eine TODO-App besonders sinnvoll, weil:
+Model-View-Controller trennt die Anwendung in drei Schichten mit klaren Verantwortlichkeiten. Diese Architektur ist für eine TODO-App besonders sinnvoll, weil:
 
 - **Testbarkeit:** Model, Repository und Controller lassen sich unabhängig von der Streamlit-UI (View) testen. Unit-Tests prüfen die Geschäftslogik isoliert, ohne dass ein Browser oder eine laufende Anwendung nötig ist.
-- **Wartbarkeit:** Änderungen am UI (View) erfordern keine Änderungen an der Logik (Controller) oder den Daten (Model). Neue Features können gezielt in der richtigen Schicht ergänzt werden, ohne bestehenden Code zu brechen.
-- **Wiederverwendbarkeit:** Der Controller kann mit verschiedenen Views verwendet werden (z.B. CLI, REST-API, anderes UI-Framework), da er keine Abhängigkeit zur Darstellungsschicht hat.
+- **Wartbarkeit:** Änderungen am UI erfordern keine Änderungen an der Logik (Controller) oder den Daten (Model). Neue Features können gezielt in der richtigen Schicht ergänzt werden, ohne bestehenden Code zu brechen.
+- **Wiederverwendbarkeit:** Der Controller kann mit verschiedenen Views verwendet werden (z.B. REST-API oder anderes UI-Framework), da er keine Abhängigkeit zur Darstellungsschicht hat.
 - **Übersichtlichkeit:** Klare Trennung der Verantwortlichkeiten macht den Code verständlicher. Jede Datei hat einen definierten Zweck und eine begrenzte Zuständigkeit.
-- **Skalierbarkeit:** Neue Funktionen (z.B. Benutzer, Projekte, Tags) können in separaten Modulen ergänzt werden, ohne bestehenden Code zu verändern.
+- **Skalierbarkeit:** Neue Funktionen (z.B. Projekte oder Tags) können in separaten Modulen ergänzt werden, ohne bestehenden Code zu verändern.
 
 ### Wie wurde MVC in diesem Projekt konkret umgesetzt?
 
 | Schicht | Datei | Klasse(n) | Verantwortlichkeit |
 |---------|-------|-----------|--------------------|
-| **Model** | `src/model.py` | `Task` | Datenstruktur (dataclass) mit Feldern: title, done, category, due_date, id, created_at. Methoden für Serialisierung (`to_dict`, `from_dict`), Status (`toggle`, `is_overdue`, `is_due_today`). |
-| **Repository** | `src/repository.py` | `TaskRepositoryInterface`, `JSONTaskRepository`, `InMemoryTaskRepository` | Abstrakte Persistenz-Schicht. JSON-Implementierung für Produktion, In-Memory für Tests. |
-| **Controller** | `src/controller.py` | `TaskController` | Geschäftslogik und CRUD-Operationen: add, delete, update, toggle, get_all, get_open, get_done, get_by_category, get_overdue, get_due_today, get_statistics. |
-| **View** | `src/view.py` | `TodoView` | Streamlit-UI mit Methoden: render_header, render_add_task_form, render_task_section, render_statistics, render. |
-| **App** | `app.py` | `main()`, `init_app()` | Einstiegspunkt. Initialisiert Repository, Controller und Mediator, erstellt die View und startet die Anwendung. |
+| **Model** | `src/model.py` | `Task` | **`Task`:** Dataclass, die eine einzelne Aufgabe repräsentiert (title, done, category, due_date, id, created_at). Wandelt sich in ein Dictionary um (`to_dict`) bzw. erzeugt sich aus einem Dictionary (`from_dict`). Wechselt den Erledigt-Status (`toggle`) und prüft, ob sie überfällig (`is_overdue`) oder heute fällig (`is_due_today`) ist. |
+| **Repository** | `src/repository.py` | `TaskRepositoryInterface`, `JSONTaskRepository`, `InMemoryTaskRepository` | **`TaskRepositoryInterface`:** Abstrakte Basisklasse, die die Schnittstelle für Persistenz definiert (`save`, `load`, `clear`). <br><br>**`JSONTaskRepository`:** Speichert und lädt Tasks als JSON-Datei auf der Festplatte. <br><br>**`InMemoryTaskRepository`:** Hält Tasks nur im Arbeitsspeicher, wird für Unit-Tests verwendet, um Dateizugriffe zu vermeiden. |
+| **Controller** | `src/controller.py` | `TaskController` | **`TaskController`:** Enthält die gesamte Geschäftslogik. Führt CRUD-Operationen aus (add, delete, update, toggle), liefert gefilterte Task-Listen (get_all, get_open, get_done, get_by_category, get_overdue, get_due_today), berechnet Statistiken (get_statistics) und delegiert das Laden/Speichern an das Repository. |
+| **View** | `src/view.py` | `TodoView` | **`TodoView`:** Baut die gesamte Streamlit-Oberfläche auf. Rendert den Header (`render_header`), das Formular zum Erstellen neuer Aufgaben (`render_add_task_form`), die filterbare und sortierbare Aufgabenliste (`render_task_section`) sowie das Statistik-Dashboard (`render_statistics`). |
+| **App** | `app.py` | `main()`, `init_app()` | **`init_app()`:** Erzeugt beim ersten Aufruf Repository, Controller und Mediator und speichert sie im Session-State. <br><br>**`main()`:** Einstiegspunkt der Anwendung ruft `init_app()` auf, erstellt die View und startet das Rendering. |
 
 
 ---
@@ -73,16 +72,16 @@ für jedes der 10 UI-Prinzipien nach Nielsen wurde mindestens ein konkretes Beis
 
 | Nr. | Prinzip | UI-Element | Konkretes Beispiel |
 |---|---------|------------|--------------------|
-| 1 | **Sichtbarkeit des Systemstatus** | Fortschrittsbalken, Statistiken | `st.progress()` zeigt den Erledigungsgrad in Prozent an. `st.metric()` zeigt Gesamt-, Offen- und Erledigt-Anzahl als Zahlenwerte im Dashboard. Der Benutzer sieht jederzeit, wie weit er ist. |
+| 1 | **Sichtbarkeit des Systemstatus** | Fortschrittsbalken | `st.progress()` zeigt den Erledigungsgrad in Prozent an. Der Benutzer sieht jederzeit, wie weit er ist. |
 | 2 | **Übereinstimmung zwischen System und realer Welt** | Icons, natürliche Sprache | Vertraute Symbole werden verwendet: Checkbox für erledigt, ein Papierkorb-Icon für Löschen, ein Kalender-Icon für Datum, ein Warn-Icon für überfällige Aufgaben. Die Begriffe entsprechen der Alltagssprache (z.B. "Erstellen", "Erledigt", "Offen"). |
 | 3 | **Benutzerkontrolle und Freiheit** | Abbrechen-Button, Rückgängig | Im Bearbeitungsmodus gibt es einen "Abbrechen"-Button, um Änderungen zu verwerfen. Kategorien können sowohl erstellt als auch wieder gelöscht werden. Erledigte Aufgaben können wieder als offen markiert werden. |
-| 4 | **Konsistenz und Standards** | Einheitliches Layout | Alle Tasks folgen demselben Layout (z.B. Desktop): Checkbox links, Titel in der Mitte, Aktions-Buttons rechts. Farben, Abstande und Schriftgroessen sind durchgehend konsistent. |
+| 4 | **Konsistenz und Standards** | Einheitliches Layout | Alle Tasks folgen demselben Layout: (z.B. für Desktop) Checkbox links, Titel in der Mitte, Aktions-Buttons rechts. Farben, Abstande und Schriftgroessen sind durchgehend konsistent. |
 | 5 | **Fehlervermeidung** | Validierung, Constraints | Leere Titel werden abgelehnt und eine Fehlermeldung angezeigt. Der Datepicker erlaubt nur Daten ab heute und verhindert so die Eingabe vergangener Fälligkeitsdaten. |
 | 6 | **Wiedererkennung statt Erinnerung** | Sichtbare Optionen | Kategorien werden als Dropdown dauerhaft angezeigt, Filter sind als Segmented Control permanent sichtbar. Der Benutzer muss sich nichts merken, alle Optionen sind direkt erkennbar. |
 | 7 | **Flexibilität und Effizienz** | Schnellaktionen, Anpassung | Ein-Klick-Checkbox für schnelles Abhaken. Smart-Sort-Toggle für automatische Priorisierung. Kategorien können individuell erstellt und verwaltet werden. |
 | 8 | **Ästhetik und minimalistisches Design** | Klares Layout | Nur notwendige Elemente werden angezeigt. Der Platz wird ausgenutzt und der Bildschirm ist nicht überladen.|
-| 9 | **Fehlererkennung und -behebung** | Klare Fehlermeldungen | Bei leerem Titel erscheint eine verständliche Fehlermeldung, die das Problem benennt und die Loesung vorgibt. Fehlermeldungen sind kontextnah platziert. |
-| 10 | **Hilfe und Dokumentation** | Tooltips, Hinweise | Ein Hilfe-Fenster erklärt die Bedienung der App. Alle Buttons haben `help`-Tooltips. Hinweistexte (`st.caption`) geben Orientierung im Formular. |
+| 9 | **Fehlererkennung und -behebung** | Klare Fehlermeldungen | Bei leerem Titel erscheint eine verständliche Fehlermeldung, die das Problem benennt und die Lösung vorgibt.|
+| 10 | **Hilfe und Dokumentation** | Tooltips, Hinweise | Ein Hilfe-Fenster erklärt die Bedienung der App. Bestimmte Buttons haben help-Tooltips. Hinweistexte geben Orientierung im Formular. |
 
 ---
 
